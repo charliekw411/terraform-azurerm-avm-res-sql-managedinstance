@@ -1,3 +1,122 @@
+variable "administrator_login" {
+  type        = string
+  description = "(Required) The administrator login name for the new server. Changing this forces a new resource to be created."
+  nullable    = false
+}
+
+variable "administrator_login_password" {
+  type        = string
+  description = "(Required) The password associated with the `administrator_login` user. Needs to comply with Azure's [Password Policy](https://msdn.microsoft.com/library/ms161959.aspx)"
+  nullable    = false
+  sensitive   = true
+}
+
+variable "license_type" {
+  type        = string
+  description = "(Required) What type of license the Managed Instance will use. Valid values include can be `LicenseIncluded` or `BasePrice`."
+  nullable    = false
+}
+
+variable "sku_name" {
+  type        = string
+  description = "(Required) Specifies the SKU Name for the SQL Managed Instance. Valid values include `GP_Gen4`, `GP_Gen5`, `BC_Gen4`, `BC_Gen5`."
+  nullable    = false
+}
+
+variable "storage_size_in_gb" {
+  type        = number
+  description = "(Required) Maximum storage space for your instance. It should be a multiple of 32GB."
+  nullable    = false
+}
+
+variable "subnet_id" {
+  type        = string
+  description = "(Required) The subnet resource id that the SQL Managed Instance will be associated with. Changing this forces a new resource to be created."
+  nullable    = false
+}
+
+variable "vcores" {
+  type        = number
+  description = "(Required) Number of cores that should be assigned to your instance. Values can be `8`, `16`, or `24` if `sku_name` is `GP_Gen4`, or `8`, `16`, `24`, `32`, or `40` if `sku_name` is `GP_Gen5`."
+  nullable    = false
+}
+
+variable "collation" {
+  type        = string
+  default     = null
+  description = "(Optional) Specifies how the SQL Managed Instance will be collated. Default value is `SQL_Latin1_General_CP1_CI_AS`. Changing this forces a new resource to be created."
+}
+
+variable "dns_zone_partner_id" {
+  type        = string
+  default     = null
+  description = "(Optional) The ID of the Managed Instance which will share the DNS zone. This is a prerequisite for creating a `azurerm_failover_group`. Setting this after creation forces a new resource to be created."
+}
+
+variable "minimum_tls_version" {
+  type        = string
+  default     = null
+  description = "(Optional) The Minimum TLS Version. Default value is `1.2` Valid values include `1.0`, `1.1`, `1.2`."
+}
+
+variable "proxy_override" {
+  type        = string
+  default     = null
+  description = "(Optional) Specifies how the SQL Managed Instance will be accessed. Default value is `Default`. Valid values include `Default`, `Proxy`, and `Redirect`."
+}
+
+variable "public_data_endpoint_enabled" {
+  type        = bool
+  default     = null
+  description = "(Optional) Is the public data endpoint enabled? Default value is `false`."
+}
+
+variable "storage_account_type" {
+  type        = string
+  default     = null
+  description = "(Optional) Specifies the storage account type used to store backups for this database. Changing this forces a new resource to be created. Possible values are `GRS`, `LRS` and `ZRS`. Defaults to `GRS`."
+}
+
+variable "timeouts" {
+  type = object({
+    create = optional(string)
+    delete = optional(string)
+    read   = optional(string)
+    update = optional(string)
+  })
+  default     = null
+  description = <<-EOT
+ - `create` - (Defaults to 24 hours) Used when creating the Sql Managed Instance.
+ - `delete` - (Defaults to 24 hours) Used when deleting the Sql Managed Instance.
+ - `read` - (Defaults to 5 minutes) Used when retrieving the Sql Managed Instance.
+ - `update` - (Defaults to 24 hours) Used when updating the Sql Managed Instance.
+EOT
+}
+
+variable "identity" {
+  type = object({
+    type = string
+  })
+  default     = null
+  description = <<-EOT
+ - `type` - (Required) Specifies the type of Managed Service Identity that should be configured on this SQL Managed Instance. The only possible value is `SystemAssigned`.
+EOT
+}
+
+variable "managed_identities" {
+  type = map(object({
+    system_assigned            = optional(bool, false)
+    user_assigned_resource_ids = optional(set(string), [])
+  }))
+  default = {}
+}
+
+variable "timezone_id" {
+  type        = string
+  default     = null
+  description = "(Optional) The TimeZone ID that the SQL Managed Instance will be operating in. Default value is `UTC`. Changing this forces a new resource to be created."
+}
+
 variable "name" {
   type        = string
   description = "The name of the this resource."
@@ -104,16 +223,6 @@ variable "lock" {
     condition     = contains(["CanNotDelete", "ReadOnly", "None"], var.lock.kind)
     error_message = "The lock level must be one of: 'None', 'CanNotDelete', or 'ReadOnly'."
   }
-}
-
-# tflint-ignore: terraform_unused_declarations
-variable "managed_identities" {
-  type = object({
-    system_assigned            = optional(bool, false)
-    user_assigned_resource_ids = optional(set(string), [])
-  })
-  default     = {}
-  description = "Managed identities to be created for the resource."
 }
 
 variable "private_endpoints" {
